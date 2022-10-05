@@ -62,7 +62,3 @@ def moving_video():
             shutil.move(video, media_dir)
         else:
             pass
-
-
-if __name__ == '__main__':
-    get_media_folder()
