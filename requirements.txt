@@ -1,0 +1,2 @@
+pathlib==1.0.1
+pytube==12.1.0
