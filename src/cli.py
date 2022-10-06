@@ -1,11 +1,15 @@
-from core import get_url, get_title, download, moving_video
+from core import (
+    get_url, get_title, get_desc, 
+    download, moving_video
+)    
 
 
 menu = {
     1: 'Informar endereço web:',
-    2: 'Mostrar Título',
+    2: 'Mostrar Título e Descrição',
     3: 'Baixar Vídeo',
-    4: 'Sair'
+    4: 'Baixar Áudio',
+    5: 'Sair'
 }
 
 # '360p': 18
@@ -41,11 +45,12 @@ def main():
 
         if opt == 2:
             print(f'\nTítulo: {get_title(url)}')
+            print(f'Descrição: {get_desc(url)}')
 
         if opt == 3:
             print('\n')
-            for v in resol.items():
-                print(f'{v}')
+            for k, v in resol.items():
+                print(f'{k} - {v}')
             res = int(input('\nSelecione uma resolução: '))
 
             if res == 1:
@@ -66,6 +71,6 @@ def main():
                 moving_video()
                 print('Vídeo baixado com sucesso!!!')
 
-        if opt == 4:
+        if opt == 5:
             print('\nPrograma finalizado!')
             break
