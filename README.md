@@ -1,4 +1,7 @@
-#### Exemplo de uma aplicação simples para fazer downloads de vídeos do Youtube
+### VDownloader v.0.1.0
+
+
+#### Exemplo de um programa simples para fazer downloads de vídeos do Youtube
 
 ##### Biblioteca utilizada: pytube
 
@@ -16,7 +19,7 @@ Windows
 
 Linux
 
-    source .venv\bin\activate
+    source .venv/bin/activate
 
 
 #### 3º passo: Instalação
@@ -25,6 +28,18 @@ Linux
 
 
 #### 4º passo: Executando o programa
+
+    na raiz do projeto (diretorio vdownloader) digitar o comando:
+
+    Windows
+    
+    python src\.
+    
+    Linux
+
+    python src/.
+
+    ou 
 
     ir até o diretório src e digitar o comando:
 
