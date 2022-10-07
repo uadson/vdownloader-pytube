@@ -1,21 +1,15 @@
 from core import (
     get_url, get_title, get_desc, 
-    download, moving_video
+    get_length, download_video, download_audio
 )    
 
 
 menu = {
-    1: 'Informar endereço web:',
-    2: 'Mostrar Título e Descrição',
-    3: 'Baixar Vídeo',
-    4: 'Baixar Áudio',
-    5: 'Sair'
+    # 1: 'Informar endereço web:',
+    1: 'Baixar Vídeo',
+    2: 'Baixar Áudio',
+    3: 'Sair'
 }
-
-# '360p': 18
-# '720p': 22
-# '1080p': 137
-# 'HQ': 0
 
 resol = {
     1: '360p',
@@ -26,51 +20,85 @@ resol = {
 
 def main():
     while True:
+        while True:
+
+            url = input('\nInforme o endereço web do vídeo que deseja baixar: ').strip()
+            if not url:
+                print('\nInforme um endereço web válido!')
+            elif get_title(url) is None:
+                print('\nEndereço inválido, tente novamente!')
+            else:
+                print(f'\nTítulo: {get_title(url)}')
+                print(f'\nDuração: {get_length(url)}')
+                print(f'\nDescrição: {get_desc(url)}')
+                break
+
         print('\n')
         for k, v in menu.items():
             print(f"{k} - {v}")
-        
-        opt = int(input('\nSelecione uma opção: '))
-        
+
+        while True:
+            try:
+                opt = int(input('\nSelecione uma opção: '))
+            except ValueError:
+                print('Digite um número válido.')
+            else:
+                if opt > len(menu) or opt <= 0:
+                    print('Opção inválida!')
+                else:
+                    break
+
         if opt == 1:
-            try: 
-                url = input('\nInforme o endereço web do vídeo que deseja baixar: ').strip()
-                if not url:
-                    print('\nInforme um endereço web válido!')
-                elif get_title(url) is None:
-                    print('\nEndereço inválido, tente novamente!')
-            except KeyboardInterrupt:
-                print('\nPrograma finalizado!')
-                break
-
-        if opt == 2:
-            print(f'\nTítulo: {get_title(url)}')
-            print(f'Descrição: {get_desc(url)}')
-
-        if opt == 3:
             print('\n')
             for k, v in resol.items():
                 print(f'{k} - {v}')
-            res = int(input('\nSelecione uma resolução: '))
+
+            while True:
+                try:
+                    res = int(input('\nSelecione uma resolução: '))
+                except ValueError:
+                    print('Digite um número válido.')
+                else:
+                    if res > len(resol) or res <= 0:
+                        print('Opção inválida!')
+                    else:
+                        break
 
             if res == 1:
-                download(url, 18, resol)
-                moving_video()
+                download_video(url, res)
+                # moving_video()
                 print('Vídeo baixado com sucesso!!!')
             elif res == 2:
-                download(url, 22, resol)
-                moving_video()
+                download_video(url, res)
+                # moving_video()
                 print('Vídeo baixado com sucesso!!!')
             elif res == 3:
-                download(url, 137, resol)
-                moving_video()
+                download_video(url, res)
+                # moving_video()
                 print('Vídeo baixado com sucesso!!!')
 
             elif res == 4:
-                download(url, res, resol)
-                moving_video()
+                download_video(url, res)
+                # moving_video()
                 print('Vídeo baixado com sucesso!!!')
 
-        if opt == 5:
+        if opt == 2:
+            download_audio(url)
+            print('Áudio baixado com sucesso!')
+
+        if opt == 3:
+            print('\nPrograma finalizado!')
+            break
+
+        print('\nDeseja baixar outro video/audio ?')
+        try:
+            answer = input('\n1 - SIM / 2 - NAO:   ' ).strip()[0]
+        except ValueError:
+            print('\nInforme um valor válido!')
+        else:
+            if int(answer) < 1 or int(answer) > 2:
+                print('\nResposta incorreta.')
+
+        if answer == '2':
             print('\nPrograma finalizado!')
             break
