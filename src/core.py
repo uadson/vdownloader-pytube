@@ -1,5 +1,6 @@
 from pytube import YouTube
 import moviepy.editor as mp
+from tqdm import tqdm
 from storage import (
     VIDEO_PATH, VD_360_PATH, VD_720_PATH, 
     VD_1080_PATH, VD_HQ_PATH, AUDIO_PATH
@@ -91,43 +92,6 @@ def download_audio(url):
             new_file = mp.AudioFileClip(mp4_path)
             new_file.write_audiofile(mp3_path)
             os.remove(mp4_path)
-
-
-def search_media_dir():
-    """
-        Getting folder media's index
-    """         
-    path_dir = os.listdir(SRC_PATH)
-    for i in range(len(path_dir)):
-        if path_dir[i] == 'media':
-            return i
-
-
-def get_media_folder():
-    """
-        Getting folder media
-    """
-    media_dir = search_media_dir()
-    path_dir = os.listdir(SRC_PATH)
-    return path_dir[media_dir]
-
-
-def get_video_folder():
-    path_dir = os.listdir()
-
-
-def moving_video():
-    path = os.listdir(BASE)
-    print(path)
-    for video in path:
-        if video.endswith('.mp4'):
-            shutil.move(video, VIDEO_PATH)
-        else:
-            pass
-
-
-def movin_audio():
-    ...
 
 
 if __name__ == "__main__":
