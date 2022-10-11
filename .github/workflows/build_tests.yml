@@ -3,7 +3,7 @@ run-name: Building and Testing
 on: [push]
 jobs:
   build:
-    runs-on: [ ubuntu-latest, windows-latest ]
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.8"]
