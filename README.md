@@ -1,4 +1,5 @@
 ### VDownloader v.0.1.0
+[![Python package](https://github.com/uadson/vdowloader/actions/workflows/build_tests.yml/badge.svg)](https://github.com/uadson/vdowloader/actions/workflows/build_tests.yml)
 
 
 #### Exemplo de um programa simples para fazer downloads de vídeos do Youtube
