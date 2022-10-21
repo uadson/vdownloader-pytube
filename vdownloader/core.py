@@ -1,12 +1,10 @@
 from pytube import YouTube
 import moviepy.editor as mp
-from tqdm import tqdm
-from storage import (
-    VIDEO_PATH, VD_360_PATH, VD_720_PATH, 
+from .storage import (
+    VD_360_PATH, VD_720_PATH, 
     VD_1080_PATH, VD_HQ_PATH, AUDIO_PATH
 )
 import os
-import shutil
 import re
 
 

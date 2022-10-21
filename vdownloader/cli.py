@@ -1,5 +1,5 @@
 from time import sleep
-from core import (
+from .core import (
     get_title, get_desc, 
     download_video, download_audio,
 )    
