@@ -1,4 +1,4 @@
-### VDownloader v.0.1.0
+### VDownloader v.0.1.1
 [![Python package](https://github.com/uadson/vdowloader/actions/workflows/build_tests.yml/badge.svg)](https://github.com/uadson/vdowloader/actions/workflows/build_tests.yml)
 
 
@@ -25,23 +25,9 @@ Linux
 
 #### 3º passo: Instalação
 
-    pip install -r requirements.txt
+    pip install vdownloader
 
 
-#### 4º passo: Executando o programa
+#### 4º passo: Executando o programa, comando:
 
-    na raiz do projeto (diretorio vdownloader) digitar o comando:
-
-    Windows
-    
-    python src\.
-    
-    Linux
-
-    python src/.
-
-    ou 
-
-    ir até o diretório src e digitar o comando:
-
-    python .
+    $ vdownloader

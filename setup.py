@@ -127,5 +127,10 @@ setup(
         'pytube',
         'moviepy',
     ],
+    entry_points={
+        'console_scripts': [
+            'vdownloader = vdownloader.cli:main',
+        ],
+    },
     zip_safe=False,
 )
