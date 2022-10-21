@@ -1,8 +1,7 @@
 from time import sleep
-from .core import (
-    get_url, get_title, get_desc, 
+from core import (
+    get_title, get_desc, 
     download_video, download_audio,
-    # get_length
 )    
 
 
@@ -113,3 +112,7 @@ def main():
             print('\nPrograma finalizado!')
             sleep(1)
             break
+
+
+if __name__ == '__main__':
+    main()
