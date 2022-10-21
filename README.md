@@ -1,4 +1,4 @@
-### VDownloader v.0.1.1
+### VDownloader
 [![Python package](https://github.com/uadson/vdowloader/actions/workflows/build_tests.yml/badge.svg)](https://github.com/uadson/vdowloader/actions/workflows/build_tests.yml)
 
 
