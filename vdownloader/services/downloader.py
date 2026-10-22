@@ -3,6 +3,7 @@
 from pathlib import Path
 import os
 import re
+import shutil
 import tempfile
 from typing import Any, Dict, List, Optional
 import yt_dlp
@@ -25,6 +26,22 @@ class MediaService:
         else:
             self.download_dir = Path(tempfile.gettempdir()) / "vdownloader_media"
         self.download_dir.mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
+    def sanitize_filename(name: str) -> str:
+        """Sanitiza o nome do arquivo para compatibilidade com sistemas de arquivos e HTTP.
+
+        Args:
+            name: Nome original do arquivo ou título do vídeo.
+
+        Returns:
+            str: Nome sanitizado livre de caracteres reservados e quebras de codificação.
+        """
+        # Substitui caracteres reservados de sistemas de arquivos e unicode problemático como \uff5c
+        sanitized = re.sub(r'[\\/*?:"<>|\uff5c]', "_", name)
+        # Remove espaços repetidos e caracteres de controle
+        sanitized = re.sub(r'\s+', " ", sanitized).strip()
+        return sanitized or "download"
 
     def format_duration(self, seconds: Optional[int | float]) -> str:
         """Formata o tempo em segundos para representação em string.
@@ -150,7 +167,8 @@ class MediaService:
         Raises:
             RuntimeError: Quando ocorrer erro durante o processamento do download.
         """
-        output_template = str(self.download_dir / "%(title).200B-%(id)s.%(ext)s")
+        output_template = str(self.download_dir / "%(title).150B-%(id)s.%(ext)s")
+        has_ffmpeg = shutil.which("ffmpeg") is not None
 
         if media_type == "audio":
             ydl_opts: Dict[str, Any] = {
@@ -158,14 +176,16 @@ class MediaService:
                 "outtmpl": output_template,
                 "quiet": True,
                 "no_warnings": True,
-                "postprocessors": [
+            }
+            # Se o ffmpeg estiver instalado, converte para mp3. Caso contrário, mantém o áudio nativo.
+            if has_ffmpeg:
+                ydl_opts["postprocessors"] = [
                     {
                         "key": "FFmpegExtractAudio",
                         "preferredcodec": "mp3",
                         "preferredquality": "192",
                     }
-                ],
-            }
+                ]
         else:
             format_selector = "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"
             if resolution == "1080p":
@@ -180,8 +200,9 @@ class MediaService:
                 "outtmpl": output_template,
                 "quiet": True,
                 "no_warnings": True,
-                "merge_output_format": "mp4",
             }
+            if has_ffmpeg:
+                ydl_opts["merge_output_format"] = "mp4"
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -189,7 +210,7 @@ class MediaService:
                 downloaded_file = Path(ydl.prepare_filename(info))
 
                 # Caso tenha sido pós-processado para mp3
-                if media_type == "audio":
+                if media_type == "audio" and has_ffmpeg:
                     possible_mp3 = downloaded_file.with_suffix(".mp3")
                     if possible_mp3.exists():
                         return possible_mp3
@@ -200,7 +221,7 @@ class MediaService:
                 # Busca pelo arquivo mais recente na pasta caso a extensão tenha mudado
                 target_stem = downloaded_file.stem
                 for candidate in self.download_dir.iterdir():
-                    if candidate.stem.startswith(target_stem[:50]):
+                    if candidate.stem.startswith(target_stem[:40]):
                         return candidate
 
                 raise RuntimeError("Arquivo baixado não foi localizado no disco.")

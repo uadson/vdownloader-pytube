@@ -67,7 +67,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ media }) => {
             <h3 className="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-2">
               Escolha a qualidade para download:
             </h3>
-            <DownloadOptionList url={media.url} options={media.options} />
+            <DownloadOptionList url={media.url} title={media.title} options={media.options} />
           </div>
         </div>
       </div>

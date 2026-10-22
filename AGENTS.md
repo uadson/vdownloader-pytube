@@ -36,3 +36,9 @@ Este documento mantém o histórico e sincronismo entre as diretrizes de desenvo
   - Execução da aplicação via Docker Compose validada com sucesso na porta 8088 (`running (healthy)`).
   - Testes do backend (pytest) e frontend (vitest) aprovados com 100% de cobertura dos novos fluxos.
   - Merge para a branch `main` e criação da tag de versão `0.2.0`.
+- **2026-10-22:** Correção de Extração/Encoding e Seleção de Diretório via Explorer (v0.2.1).
+  - Diagnóstico e correção do erro de codificação `latin-1` gerado por caracteres unicode especiais (`\uff5c` e barras verticais) presentes no título do vídeo `https://www.youtube.com/watch?v=41IOkVjy3MM`.
+  - Implementação de sanitização de nomes de arquivos em `MediaService.sanitize_filename` e cabeçalho `Content-Disposition` em conformidade com RFC 5987 / RFC 6266 com fallback ASCII seguro e UTF-8 percent-encoded.
+  - Resiliência na extração de áudio caso o host não possua o binário do `ffmpeg`.
+  - Implementação da janela nativa do Explorer para seleção de diretório de armazenamento no frontend utilizando a **File System Access API** (`window.showSaveFilePicker`). Ao clicar em Baixar, o navegador abre o gerenciador de arquivos nativo (Explorer/Finder) para o usuário escolher onde deseja armazenar a mídia, com barra de progresso em tempo real e fallback tradicional para mobile.
+  - Suíte de testes do backend atualizada para 11 testes aprovados e testes do frontend aprovados.

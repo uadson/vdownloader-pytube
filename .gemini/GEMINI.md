@@ -37,11 +37,12 @@ Migração e refatoração do software **vdownloader-pytube** de uma aplicação
 - Docker Compose configurado com volumes isolados e healthcheck nativo na porta 8088.
 - Scripts de manutenção preventiva e unidades systemd sob `infra/maintenance/`.
 
-## 7. Status do Deployment (v0.2.0)
-- Container `vdownloader-app` em execução ativa no host com status saudável.
-- Porta exposta: `8088:8088` (sem conflitos com serviços nas portas 3000 e 8000).
-- Suíte de testes: 10 testes pytest + 5 testes vitest executados com 100% de sucesso.
-- Interface web totalmente responsiva e acessível em `http://localhost:8088`.
+## 7. Status do Deployment (v0.2.1)
+- Correção de erro na extração de títulos com caracteres unicode fora da tabela latin-1 (ex: barras fullwidth `\uff5c`) com sanitização e encoding compatível com RFC 5987 / RFC 6266.
+- Implementação de seleção de diretório no navegador através da File System Access API nativa do sistema operacional (Explorer), permitindo ao usuário indicar a pasta onde deseja salvar o vídeo ou áudio.
+- Container `vdownloader-app` em execução ativa no host com status saudável na porta `8088`.
+- Suíte de testes: 11 testes pytest + 5 testes vitest executados com 100% de sucesso.
+
 
 
 

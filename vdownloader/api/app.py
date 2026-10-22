@@ -1,7 +1,9 @@
 """Aplicação FastAPI para extração e download de mídias do YouTube."""
 
 from pathlib import Path
+import re
 from typing import Optional
+from urllib.parse import quote
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -10,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from vdownloader.api.schemas import HealthResponse, VideoInfoRequest, VideoInfoResponse
 from vdownloader.services.downloader import MediaService
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 app = FastAPI(
     title="vDownloader API",
@@ -25,6 +27,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition", "Content-Length"],
 )
 
 media_service = MediaService()
@@ -125,12 +128,22 @@ def download_media(
         background_tasks.add_task(cleanup_file, file_path)
 
         media_mime = "audio/mpeg" if media_type == "audio" else "video/mp4"
+
+        # Sanitiza e formata o cabeçalho Content-Disposition conforme a RFC 5987 / RFC 6266
+        # Garante fallback ASCII seguro para cabeçalhos HTTP (latin-1) e nome UTF-8 estendido
+        safe_filename = media_service.sanitize_filename(file_path.name)
+        ascii_fallback = re.sub(r"[^\x20-\x7E]", "_", safe_filename)
+        encoded_filename = quote(safe_filename)
+        content_disposition = (
+            f'attachment; filename="{ascii_fallback}"; filename*=UTF-8\'\'{encoded_filename}'
+        )
+
         return FileResponse(
             path=str(file_path),
-            filename=file_path.name,
+            filename=ascii_fallback,
             media_type=media_mime,
             headers={
-                "Content-Disposition": f'attachment; filename="{file_path.name}"'
+                "Content-Disposition": content_disposition,
             },
         )
     except Exception as exc:

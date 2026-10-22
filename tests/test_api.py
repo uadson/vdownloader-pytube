@@ -120,3 +120,35 @@ def test_download_endpoint_success(
     assert response.content == b"conteudo binario de video simulado"
     assert "video_teste.mp4" in response.headers.get("content-disposition", "")
 
+
+@patch("vdownloader.services.downloader.MediaService.download_media")
+def test_download_endpoint_special_characters_filename(
+    mock_download: MagicMock, client: TestClient, tmp_path: pytest.TempPathFactory
+) -> None:
+    """Valida o endpoint GET /api/download com caracteres unicode especiais no nome.
+
+    Args:
+        mock_download: Mock do método download_media do MediaService.
+        client: Cliente de teste HTTP.
+        tmp_path: Diretório temporário fornecido pelo pytest.
+    """
+    # Nome similar ao vídeo reportado pelo usuário com caractere \uff5c
+    special_name = "Max Richter - Spring 1 (2012) \uff5c Recomposed.mp3"
+    fake_file = tmp_path / special_name
+    fake_file.write_bytes(b"conteudo de audio simulado")
+    mock_download.return_value = fake_file
+
+    response = client.get(
+        "/api/download",
+        params={
+            "url": "https://www.youtube.com/watch?v=41IOkVjy3MM",
+            "media_type": "audio",
+        },
+    )
+    assert response.status_code == 200
+    assert response.content == b"conteudo de audio simulado"
+    # O cabeçalho deve estar presente e seguro para HTTP
+    content_disp = response.headers.get("content-disposition", "")
+    assert "attachment" in content_disp
+
+

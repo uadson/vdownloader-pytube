@@ -134,3 +134,5 @@ node_modules/
 frontend/dist/
 *.env
 !infra/docker/env-example
+
+.vscode/
