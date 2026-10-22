@@ -1,0 +1,6 @@
+# Configurações do vDownloader
+APP_ENV=production
+PORT=8088
+HOST=0.0.0.0
+# Diretório temporário para arquivos de mídia baixados
+MEDIA_DOWNLOAD_DIR=/tmp/vdownloader_media

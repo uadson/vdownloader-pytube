@@ -1,0 +1,25 @@
+services:
+  vdownloader:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+    container_name: vdownloader-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8088}:${PORT:-8088}"
+    environment:
+      - PORT=${PORT:-8088}
+      - HOST=0.0.0.0
+      - APP_ENV=${APP_ENV:-production}
+    volumes:
+      - media_cache:/tmp/vdownloader_media
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${PORT:-8088}/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  media_cache:
+    driver: local

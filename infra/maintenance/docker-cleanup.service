@@ -1,0 +1,10 @@
+[Unit]
+Description=Rotina de limpeza periódica de recursos não utilizados do Docker
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/uadson/repos/vdownloader-pytube/infra/maintenance/docker-cleanup.sh
+StandardOutput=journal
+StandardError=journal

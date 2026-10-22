@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer para execução periódica do script de limpeza do Docker
+RefersTo=docker-cleanup.service
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=1800
+
+[Install]
+WantedBy=timers.target

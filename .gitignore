@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Virtual environment and node
+.venv/
+node_modules/
+frontend/dist/
+*.env
+!infra/docker/env-example
