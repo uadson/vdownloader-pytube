@@ -48,3 +48,7 @@ Este documento mantém o histórico e sincronismo entre as diretrizes de desenvo
   - Atualização do `vdownloader/__main__.py` para inicializar o servidor FastAPI com suporte opcional à flag `--cli`.
   - Criação da especificação de deploy no Fly.io em `fly.toml` com porta interna 8088, healthcheck, auto-start/stop e 1GB de RAM dimensionada para ffmpeg e yt-dlp.
   - Validação dos 11 testes pytest e 5 testes vitest.
+- **2026-10-22:** Inicialização do App Fly.io e Geração de Configurações (v0.2.3).
+  - Configuração do aplicativo `vdtube` no Fly.io associado à região `gru` (São Paulo).
+  - Adição do arquivo `.dockerignore` otimizado para o processo de build do Fly.io.
+  - Sincronização dos parâmetros de runtime com portas expostas e verificações de integridade.

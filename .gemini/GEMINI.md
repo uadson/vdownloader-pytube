@@ -49,6 +49,11 @@ Migração e refatoração do software **vdownloader-pytube** de uma aplicação
 - Ponto de entrada `__main__.py` padronizado para execução do servidor FastAPI com suporte a flag `--cli`.
 - Configuração de deploy em nuvem com Fly.io através de `fly.toml` com região `gru` (São Paulo), alocação de 1GB de RAM para suportar tarefas de extração e conversão de mídia com ffmpeg/yt-dlp e healthcheck em `/api/health`.
 
+## 9. Registro de Deploy Fly.io (v0.2.3)
+- Criação e vínculo do aplicativo de nuvem `vdtube` no Fly.io na região `gru` (São Paulo).
+- Inclusão do `.dockerignore` para acelerar o upload e compilação do build remoto/local.
+
+
 
 
 
