@@ -8,8 +8,6 @@ import tempfile
 from typing import Any, Dict, List, Optional
 import yt_dlp
 
-from vdownloader.storage import MEDIA_PATH
-
 
 class MediaService:
     """Serviço que orquestra a obtenção de metadados e download de vídeos e áudios."""

@@ -45,6 +45,30 @@ Acesse a aplicação no navegador em:
 
 ---
 
+## 🚀 Como Fazer Deploy no Fly.io
+
+O projeto já inclui o arquivo de configuração [`fly.toml`](fly.toml) otimizado com memória adequada (1GB para suportar yt-dlp e ffmpeg), healthcheck e build multi-stage:
+
+1. Faça o login na sua conta Fly.io pelo terminal:
+   ```bash
+   fly auth login
+   ```
+   *(Ou defina a variável `FLY_API_TOKEN` com o token gerado no dashboard do Fly.io)*
+
+2. Crie e lance o aplicativo na nuvem:
+   ```bash
+   fly launch --copy-config
+   ```
+
+3. Para atualizações e novos deploys:
+   ```bash
+   fly deploy
+   ```
+
+A aplicação ficará disponível automaticamente no domínio público seguro HTTPS gerado pelo Fly.io (ex: `https://vdownloader-pytube.fly.dev`).
+
+---
+
 ## 🛠️ Desenvolvimento Local
 
 ### Backend (Python com `uv`)

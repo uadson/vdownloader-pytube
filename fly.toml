@@ -1,0 +1,38 @@
+# Configuração de Deployment para o Fly.io
+# Documentação de referência: https://fly.io/docs/reference/configuration/
+
+app = "vdownloader-pytube"
+primary_region = "gru"
+
+[build]
+  dockerfile = "infra/docker/Dockerfile"
+
+[env]
+  PORT = "8088"
+  APP_ENV = "production"
+  PYTHONUNBUFFERED = "1"
+
+[http_service]
+  internal_port = 8088
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 50
+    soft_limit = 30
+
+[[http_service.checks]]
+  grace_period = "15s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/api/health"
+
+[[vm]]
+  memory = "1024mb"
+  cpu_kind = "shared"
+  cpus = 1

@@ -42,3 +42,9 @@ Este documento mantém o histórico e sincronismo entre as diretrizes de desenvo
   - Resiliência na extração de áudio caso o host não possua o binário do `ffmpeg`.
   - Implementação da janela nativa do Explorer para seleção de diretório de armazenamento no frontend utilizando a **File System Access API** (`window.showSaveFilePicker`). Ao clicar em Baixar, o navegador abre o gerenciador de arquivos nativo (Explorer/Finder) para o usuário escolher onde deseja armazenar a mídia, com barra de progresso em tempo real e fallback tradicional para mobile.
   - Suíte de testes do backend atualizada para 11 testes aprovados e testes do frontend aprovados.
+- **2026-10-22:** Limpeza de Código Legado e Preparação para Fly.io (v0.2.2).
+  - Remoção dos arquivos e pastas desnecessárias: `requirements.txt`, `setup.py`, `MANIFEST.in` e `vdownloader/media/`.
+  - Remoção de import desnecessário de `MEDIA_PATH` em `vdownloader/services/downloader.py`.
+  - Atualização do `vdownloader/__main__.py` para inicializar o servidor FastAPI com suporte opcional à flag `--cli`.
+  - Criação da especificação de deploy no Fly.io em `fly.toml` com porta interna 8088, healthcheck, auto-start/stop e 1GB de RAM dimensionada para ffmpeg e yt-dlp.
+  - Validação dos 11 testes pytest e 5 testes vitest.

@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from vdownloader.api.schemas import HealthResponse, VideoInfoRequest, VideoInfoResponse
 from vdownloader.services.downloader import MediaService
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 
 app = FastAPI(
     title="vDownloader API",

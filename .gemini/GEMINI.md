@@ -43,6 +43,13 @@ Migração e refatoração do software **vdownloader-pytube** de uma aplicação
 - Container `vdownloader-app` em execução ativa no host com status saudável na porta `8088`.
 - Suíte de testes: 11 testes pytest + 5 testes vitest executados com 100% de sucesso.
 
+## 8. Limpeza de Código e Deploy no Fly.io (v0.2.2)
+- Remoção de arquivos legados de empacotamento: `setup.py`, `MANIFEST.in`, `requirements.txt`.
+- Remoção da pasta legada `vdownloader/media` e imports órfãos.
+- Ponto de entrada `__main__.py` padronizado para execução do servidor FastAPI com suporte a flag `--cli`.
+- Configuração de deploy em nuvem com Fly.io através de `fly.toml` com região `gru` (São Paulo), alocação de 1GB de RAM para suportar tarefas de extração e conversão de mídia com ffmpeg/yt-dlp e healthcheck em `/api/health`.
+
+
 
 
 
