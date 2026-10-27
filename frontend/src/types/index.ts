@@ -22,3 +22,13 @@ export interface VideoInfo {
 export interface ApiError {
   detail: string;
 }
+
+export interface DownloadTaskStatus {
+  task_id: string;
+  status: 'pending' | 'downloading' | 'processing' | 'ready' | 'failed';
+  progress: number;
+  message?: string | null;
+  filename?: string | null;
+  error?: string | null;
+}
+

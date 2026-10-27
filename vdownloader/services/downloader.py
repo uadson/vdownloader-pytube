@@ -5,7 +5,7 @@ import os
 import re
 import shutil
 import tempfile
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 import yt_dlp
 
 
@@ -151,6 +151,7 @@ class MediaService:
         url: str,
         media_type: str = "video",
         resolution: Optional[str] = "best",
+        progress_hook: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> Path:
         """Executa o download da mídia solicitada e retorna o caminho do arquivo gerado.
 
@@ -158,6 +159,7 @@ class MediaService:
             url: Endereço do vídeo.
             media_type: Tipo de mídia desejada ('video' ou 'audio').
             resolution: Resolução desejada ('360p', '720p', '1080p', 'best').
+            progress_hook: Função opcional de callback chamada durante o progresso do download.
 
         Returns:
             Path: Caminho absoluto para o arquivo de mídia baixado.
@@ -201,6 +203,9 @@ class MediaService:
             }
             if has_ffmpeg:
                 ydl_opts["merge_output_format"] = "mp4"
+
+        if progress_hook:
+            ydl_opts["progress_hooks"] = [progress_hook]
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:

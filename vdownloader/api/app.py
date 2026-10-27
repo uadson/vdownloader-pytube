@@ -9,10 +9,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from vdownloader.api.schemas import HealthResponse, VideoInfoRequest, VideoInfoResponse
+from vdownloader.api.schemas import (
+    DownloadJobRequest,
+    DownloadJobStatus,
+    HealthResponse,
+    VideoInfoRequest,
+    VideoInfoResponse,
+)
 from vdownloader.services.downloader import MediaService
+from vdownloader.services.task_manager import DownloadTaskManager
 
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 
 app = FastAPI(
     title="vDownloader API",
@@ -31,6 +38,7 @@ app.add_middleware(
 )
 
 media_service = MediaService()
+task_manager = DownloadTaskManager(media_service=media_service)
 
 
 def cleanup_file(path: Path) -> None:
@@ -47,7 +55,7 @@ def cleanup_file(path: Path) -> None:
 
 
 @app.get("/api/health", response_model=HealthResponse, tags=["Monitoramento"])
-def health_check() -> HealthResponse:
+async def health_check() -> HealthResponse:
     """Retorna o status de saúde e versão do serviço.
 
     Returns:
@@ -151,6 +159,134 @@ def download_media(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Falha ao realizar download da mídia: {str(exc)}",
         ) from exc
+
+
+@app.post(
+    "/api/download/start",
+    response_model=DownloadJobStatus,
+    status_code=status.HTTP_200_OK,
+    tags=["Mídia Assíncrona"],
+)
+def start_download_job(request: DownloadJobRequest) -> DownloadJobStatus:
+    """Inicia uma tarefa assíncrona de download e mesclagem de mídia em background.
+
+    Args:
+        request: Parâmetros de URL, tipo de mídia e resolução.
+
+    Returns:
+        DownloadJobStatus: Objeto de estado com o identificador único da tarefa.
+    """
+    task_id = task_manager.create_job(
+        url=request.url,
+        media_type=request.media_type,
+        resolution=request.resolution,
+    )
+    job = task_manager.get_job(task_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Não foi possível registrar a tarefa de download.",
+        )
+
+    return DownloadJobStatus(
+        task_id=job.task_id,
+        status=job.status,
+        progress=job.progress,
+        message=job.message,
+        filename=job.filename,
+        error=job.error,
+    )
+
+
+@app.get(
+    "/api/download/task/{task_id}",
+    response_model=DownloadJobStatus,
+    tags=["Mídia Assíncrona"],
+)
+def get_download_task_status(task_id: str) -> DownloadJobStatus:
+    """Consulta o status atual e progresso de uma tarefa de download.
+
+    Args:
+        task_id: Identificador único retornado na inicialização da tarefa.
+
+    Returns:
+        DownloadJobStatus: Detalhes do estado atual, progresso e mensagens.
+
+    Raises:
+        HTTPException: Caso a tarefa não exista ou já tenha expirado.
+    """
+    job = task_manager.get_job(task_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Tarefa '{task_id}' não encontrada ou expirada.",
+        )
+
+    return DownloadJobStatus(
+        task_id=job.task_id,
+        status=job.status,
+        progress=job.progress,
+        message=job.message,
+        filename=job.filename,
+        error=job.error,
+    )
+
+
+@app.get("/api/download/file/{task_id}", tags=["Mídia Assíncrona"])
+def get_download_task_file(
+    task_id: str,
+    background_tasks: BackgroundTasks,
+) -> FileResponse:
+    """Transfere o arquivo gerado por uma tarefa concluída diretamente como anexo.
+
+    Args:
+        task_id: Identificador único da tarefa de download.
+        background_tasks: Gerenciador de tarefas em background do FastAPI.
+
+    Returns:
+        FileResponse: Arquivo em disco transferido via streaming.
+
+    Raises:
+        HTTPException: Quando a tarefa não existir, não estiver pronta ou o arquivo não existir.
+    """
+    job = task_manager.get_job(task_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Tarefa '{task_id}' não encontrada.",
+        )
+
+    if job.status != "ready" or not job.file_path:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"A mídia ainda não está pronta para download (status atual: {job.status}).",
+        )
+
+    if not job.file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="O arquivo processado não foi encontrado no servidor.",
+        )
+
+    background_tasks.add_task(cleanup_file, job.file_path)
+
+    media_mime = "audio/mpeg" if job.media_type == "audio" else "video/mp4"
+    safe_filename = media_service.sanitize_filename(job.file_path.name)
+    ascii_fallback = re.sub(r"[^\x20-\x7E]", "_", safe_filename)
+    encoded_filename = quote(safe_filename)
+    content_disposition = (
+        f'attachment; filename="{ascii_fallback}"; filename*=UTF-8\'\'{encoded_filename}'
+    )
+
+    return FileResponse(
+        path=str(job.file_path),
+        filename=ascii_fallback,
+        media_type=media_mime,
+        headers={
+            "Content-Disposition": content_disposition,
+        },
+    )
+
 
 
 # Montagem do frontend SPA compilado, caso exista

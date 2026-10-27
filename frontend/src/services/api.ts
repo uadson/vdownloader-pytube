@@ -1,4 +1,4 @@
-import { VideoInfo } from '../types';
+import { DownloadTaskStatus, VideoInfo } from '../types';
 
 export interface DownloadProgress {
   loadedBytes: number;
@@ -60,6 +60,70 @@ export const getDownloadUrl = (
   return `/api/download?${params.toString()}`;
 };
 
+export const startDownloadTask = async (
+  videoUrl: string,
+  mediaType: 'video' | 'audio',
+  resolution?: string | null
+): Promise<DownloadTaskStatus> => {
+  const response = await fetch('/api/download/start', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      url: videoUrl,
+      media_type: mediaType,
+      resolution: resolution || 'best',
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ detail: 'Falha ao iniciar processamento da mídia.' }));
+    throw new Error(errorData.detail || 'Não foi possível registrar o download no servidor.');
+  }
+
+  return response.json();
+};
+
+export const getDownloadTaskStatus = async (taskId: string): Promise<DownloadTaskStatus> => {
+  const response = await fetch(`/api/download/task/${taskId}`);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ detail: 'Tarefa de download não encontrada.' }));
+    throw new Error(errorData.detail || 'Não foi possível consultar o status do download.');
+  }
+  return response.json();
+};
+
+export const getTaskDownloadUrl = (taskId: string): string => `/api/download/file/${taskId}`;
+
+export const pollTaskUntilReady = async (
+  taskId: string,
+  onStatusUpdate?: (status: DownloadTaskStatus) => void,
+  intervalMs: number = 1500,
+  maxAttempts: number = 240
+): Promise<DownloadTaskStatus> => {
+  let attempts = 0;
+  while (attempts < maxAttempts) {
+    const taskStatus = await getDownloadTaskStatus(taskId);
+    if (onStatusUpdate) {
+      onStatusUpdate(taskStatus);
+    }
+
+    if (taskStatus.status === 'ready') {
+      return taskStatus;
+    }
+
+    if (taskStatus.status === 'failed') {
+      throw new Error(taskStatus.error || 'Falha ao processar a mídia no servidor.');
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    attempts++;
+  }
+
+  throw new Error('Tempo limite excedido ao processar a mídia no servidor.');
+};
+
 export const triggerDirectDownload = (downloadUrl: string, filename?: string): void => {
   const anchor = document.createElement('a');
   anchor.href = downloadUrl;
@@ -79,9 +143,8 @@ export const downloadWithFolderSelection = async (
   resolution: string | null | undefined,
   title: string,
   ext: string,
-  onProgress?: (progress: DownloadProgress) => void
+  onStatusChange?: (message: string, progress?: DownloadProgress) => void
 ): Promise<'completed' | 'cancelled'> => {
-  const downloadUrl = getDownloadUrl(videoUrl, mediaType, resolution);
   const cleanTitle = title.replace(/[\\/*?:"<>|\uff5c]/g, '_').trim() || 'download';
   const suggestedFilename = `${cleanTitle}.${ext}`;
 
@@ -113,9 +176,35 @@ export const downloadWithFolderSelection = async (
       throw err;
     }
 
-    const response = await fetch(downloadUrl);
+    if (onStatusChange) {
+      onStatusChange('Iniciando processamento no servidor...');
+    }
+
+    // 1. Inicia a tarefa assíncrona no servidor
+    const initialTask = await startDownloadTask(videoUrl, mediaType, resolution);
+
+    // 2. Realiza polling do progresso no servidor até estar pronto
+    const readyTask = await pollTaskUntilReady(initialTask.task_id, (task) => {
+      if (onStatusChange) {
+        if (task.message) {
+          onStatusChange(task.message);
+        } else if (task.status === 'downloading') {
+          onStatusChange(`Baixando mídia no servidor: ${task.progress.toFixed(0)}%...`);
+        } else if (task.status === 'processing') {
+          onStatusChange('Mesclando faixas de mídia com FFmpeg...');
+        }
+      }
+    });
+
+    if (onStatusChange) {
+      onStatusChange('Conectando e transferindo para a pasta selecionada...');
+    }
+
+    // 3. Transfere o arquivo gerado diretamente para o fileHandle escolhido no Explorer
+    const fileDownloadUrl = getTaskDownloadUrl(readyTask.task_id);
+    const response = await fetch(fileDownloadUrl);
     if (!response.ok) {
-      throw new Error('Falha ao processar download no servidor.');
+      throw new Error('Falha ao transferir arquivo processado do servidor.');
     }
 
     const contentLengthHeader = response.headers.get('content-length');
@@ -140,9 +229,14 @@ export const downloadWithFolderSelection = async (
         if (value) {
           await writable.write(value);
           loadedBytes += value.length;
-          if (onProgress) {
+          if (onStatusChange) {
             const percentage = totalBytes ? Math.round((loadedBytes / totalBytes) * 100) : undefined;
-            onProgress({ loadedBytes, totalBytes, percentage });
+            const progress: DownloadProgress = { loadedBytes, totalBytes, percentage };
+            const mbs = (loadedBytes / (1024 * 1024)).toFixed(1);
+            const msg = percentage !== undefined
+              ? `Gravando no seu computador: ${percentage}% concluído (${mbs} MB)...`
+              : `Gravando no seu computador: ${mbs} MB transferidos...`;
+            onStatusChange(msg, progress);
           }
         }
       }
@@ -153,7 +247,22 @@ export const downloadWithFolderSelection = async (
     return 'completed';
   }
 
-  // Fallback tradicional para navegadores que não suportam a API nativa ou mobile
-  triggerDirectDownload(downloadUrl, suggestedFilename);
+  // Fallback tradicional para mobile ou navegadores sem a File System Access API
+  if (onStatusChange) {
+    onStatusChange('Iniciando processamento no servidor...');
+  }
+  const initialTask = await startDownloadTask(videoUrl, mediaType, resolution);
+  const readyTask = await pollTaskUntilReady(initialTask.task_id, (task) => {
+    if (onStatusChange) {
+      if (task.message) {
+        onStatusChange(task.message);
+      } else if (task.status === 'downloading') {
+        onStatusChange(`Baixando mídia no servidor: ${task.progress.toFixed(0)}%...`);
+      }
+    }
+  });
+
+  const fileDownloadUrl = getTaskDownloadUrl(readyTask.task_id);
+  triggerDirectDownload(fileDownloadUrl, suggestedFilename);
   return 'completed';
 };

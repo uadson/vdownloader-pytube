@@ -52,3 +52,12 @@ Este documento mantém o histórico e sincronismo entre as diretrizes de desenvo
   - Configuração do aplicativo `vdtube` no Fly.io associado à região `gru` (São Paulo).
   - Adição do arquivo `.dockerignore` otimizado para o processo de build do Fly.io.
   - Sincronização dos parâmetros de runtime com portas expostas e verificações de integridade.
+- **2026-10-27:** Arquitetura Assíncrona de Downloads para Fly.io com Seleção no Explorer (v0.2.4).
+  - Diagnóstico de timeout de 60s do Fly-Proxy em vídeos longos de alta resolução e transmissões ao vivo gravadas (ex: link `https://www.youtube.com/watch?v=FrzVVubr8z0` de 1h40).
+  - Implementação de `DownloadTaskManager` em `vdownloader/services/task_manager.py` com fila de jobs assíncronos em threads dedicadas e captura de progresso em tempo real via hook do `yt-dlp`.
+  - Novos endpoints na API FastAPI: `POST /api/download/start`, `GET /api/download/task/{task_id}` e `GET /api/download/file/{task_id}`.
+  - Health check otimizado com `async def` para resposta imediata sem concorrência de thread pool.
+  - Otimização do `fly.toml` com aumento de memória para 2GB (`memory_mb = 2048`) e tolerância de health check (`timeout = '15s'`, `grace_period = '30s'`).
+  - Atualização do frontend em `frontend/src/services/api.ts` e `DownloadOptionList.tsx`: abertura imediata da janela nativa do Explorer (`showSaveFilePicker`) no clique do usuário (atendendo à exigência de *User Gesture* dos navegadores), disparo do job em background, polling rápido de status (evitando idle timeout do proxy do Fly.io) e gravação em streaming direto no arquivo escolhido.
+  - Suíte de testes expandida para 17 testes `pytest` e 8 testes `vitest` (100% aprovados).
+

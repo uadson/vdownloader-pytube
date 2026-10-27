@@ -29,12 +29,12 @@ primary_region = 'gru'
 
   [[http_service.checks]]
     interval = '30s'
-    timeout = '5s'
-    grace_period = '15s'
+    timeout = '15s'
+    grace_period = '30s'
     method = 'GET'
     path = '/api/health'
 
 [[vm]]
-  memory = '1gb'
+  memory = '2gb'
   cpus = 1
-  memory_mb = 1024
+  memory_mb = 2048

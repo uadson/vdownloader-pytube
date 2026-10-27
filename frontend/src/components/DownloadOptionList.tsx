@@ -30,13 +30,10 @@ export const DownloadOptionList: React.FC<DownloadOptionListProps> = ({ url, tit
         option.resolution,
         title,
         option.ext,
-        (progress) => {
-          setDownloadProgress(progress);
-          if (progress.percentage !== undefined) {
-            setStatusMessage(`Gravando arquivo: ${progress.percentage}% concluído...`);
-          } else {
-            const mbs = (progress.loadedBytes / (1024 * 1024)).toFixed(1);
-            setStatusMessage(`Gravando arquivo: ${mbs} MB transferidos...`);
+        (msg, progress) => {
+          setStatusMessage(msg);
+          if (progress) {
+            setDownloadProgress(progress);
           }
         }
       );
