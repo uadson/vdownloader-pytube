@@ -19,7 +19,7 @@ from vdownloader.api.schemas import (
 from vdownloader.services.downloader import MediaService
 from vdownloader.services.task_manager import DownloadTaskManager
 
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 
 app = FastAPI(
     title="vDownloader API",

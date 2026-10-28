@@ -53,7 +53,7 @@ Migração e refatoração do software **vdownloader-pytube** de uma aplicação
 - Criação e vínculo do aplicativo de nuvem `vdtube` no Fly.io na região `gru` (São Paulo).
 - Inclusão do `.dockerignore` para acelerar o upload e compilação do build remoto/local.
 
-## 10. Arquitetura Assíncrona e Otimização de Downloads Pesados (v0.2.4)
+## 10. Arquitetura Assíncrona e Otimização de Downloads Pesados (v0.2.5)
 - Diagnóstico e correção de timeout em transmissões ao vivo gravadas e vídeos longos (ex: aulas de mais de 2 horas).
 - Aceleração multithread de download com `concurrent_fragment_downloads = 5`, `buffersize = 64KB` e `http_chunk_size = 10MB`, elevando a taxa de transferência para até 13-25 MB/s.
 - Telemetria de progresso para fragmentos HLS/DASH com velocidade em MB/s e tempo restante estimado (ETA).
