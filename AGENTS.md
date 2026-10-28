@@ -66,4 +66,5 @@ Este documento mantém o histórico e sincronismo entre as diretrizes de desenvo
   - Cálculo de progresso e telemetria para fluxos fragmentados HLS/DASH com `fragment_index`/`fragment_count`, formatação de velocidade em tempo real e tempo restante estimado (ETA).
   - Polling resiliente no frontend com tolerância estendida de até 30 minutos (`maxAttempts = 1200`) e suporte a retentativas em caso de instabilidades transitórias de rede.
   - Suíte de testes expandida para 21 testes `pytest` e 8 testes `vitest` (100% aprovados).
+  - Deploy em produção realizado com sucesso no Fly.io no aplicativo `vdtube` (`https://vdtube.fly.dev`), com verificação de integridade e resposta HTTP/2 200 confirmadas.
 

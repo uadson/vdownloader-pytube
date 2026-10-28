@@ -59,6 +59,7 @@ Migração e refatoração do software **vdownloader-pytube** de uma aplicação
 - Telemetria de progresso para fragmentos HLS/DASH com velocidade em MB/s e tempo restante estimado (ETA).
 - Polling resiliente no frontend com tolerância de até 30 minutos e recuperação de erros transitórios.
 - Suíte de testes: 21 testes pytest + 8 testes vitest executados com 100% de sucesso.
+- Deploy concluído no Fly.io no aplicativo `vdtube` na região `gru` (São Paulo) acessível em `https://vdtube.fly.dev`.
 
 
 
