@@ -91,20 +91,37 @@ class DownloadTaskManager:
         if hook_status == "downloading":
             total_bytes = data.get("total_bytes") or data.get("total_bytes_estimate") or 0
             downloaded = data.get("downloaded_bytes") or 0
+            frag_index = data.get("fragment_index")
+            frag_count = data.get("fragment_count")
+
+            pct = 0.0
             if total_bytes > 0:
                 pct = round((downloaded / total_bytes) * 100, 1)
-                self._update_job(
-                    task_id=task_id,
-                    status="downloading",
-                    progress=pct,
-                    message=f"Baixando mídia do YouTube: {pct:.1f}% concluído...",
-                )
+            elif frag_count and frag_index is not None and frag_count > 0:
+                pct = round((frag_index / frag_count) * 100, 1)
+
+            speed_str = self.media_service.format_speed(data.get("speed"))
+            eta_str = self.media_service.format_eta(data.get("eta"))
+
+            extra_info = []
+            if speed_str:
+                extra_info.append(speed_str)
+            if eta_str:
+                extra_info.append(f"restante: {eta_str}")
+
+            telemetry = f" ({', '.join(extra_info)})" if extra_info else ""
+
+            if pct > 0:
+                msg = f"Baixando mídia do YouTube: {pct:.1f}% concluído{telemetry}..."
             else:
-                self._update_job(
-                    task_id=task_id,
-                    status="downloading",
-                    message="Baixando fluxo de mídia do YouTube...",
-                )
+                msg = f"Baixando fluxo de mídia do YouTube{telemetry}..."
+
+            self._update_job(
+                task_id=task_id,
+                status="downloading",
+                progress=pct,
+                message=msg,
+            )
         elif hook_status == "finished":
             self._update_job(
                 task_id=task_id,

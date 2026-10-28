@@ -62,6 +62,49 @@ class MediaService:
             return f"{hours:02d}:{minutes:02d}:{secs:02d}"
         return f"{minutes:02d}:{secs:02d}"
 
+    @staticmethod
+    def format_speed(bytes_per_sec: Optional[float | int]) -> str:
+        """Formata velocidade de transferência em bytes por segundo para representação legível.
+
+        Args:
+            bytes_per_sec: Taxa de download em bytes por segundo.
+
+        Returns:
+            str: Velocidade formatada em MB/s ou KB/s.
+        """
+        if not bytes_per_sec or bytes_per_sec <= 0:
+            return ""
+
+        speed_val = float(bytes_per_sec)
+        if speed_val >= 1024 * 1024:
+            return f"{speed_val / (1024 * 1024):.1f} MB/s"
+        return f"{speed_val / 1024:.1f} KB/s"
+
+    @staticmethod
+    def format_eta(seconds: Optional[float | int]) -> str:
+        """Formata o tempo restante estimado (ETA) em segundos.
+
+        Args:
+            seconds: Segundos restantes estimados.
+
+        Returns:
+            str: Tempo restante amigável (ex: '45s', '02:30', '01:15:20').
+        """
+        if not seconds or seconds <= 0:
+            return ""
+
+        total_secs = int(seconds)
+        if total_secs < 60:
+            return f"{total_secs}s"
+
+        hours = total_secs // 3600
+        mins = (total_secs % 3600) // 60
+        secs = total_secs % 60
+
+        if hours > 0:
+            return f"{hours:02d}:{mins:02d}:{secs:02d}"
+        return f"{mins:02d}:{secs:02d}"
+
     def extract_info(self, url: str) -> Dict[str, Any]:
         """Extrai metadados completos de um vídeo a partir da sua URL.
 
@@ -170,12 +213,21 @@ class MediaService:
         output_template = str(self.download_dir / "%(title).150B-%(id)s.%(ext)s")
         has_ffmpeg = shutil.which("ffmpeg") is not None
 
+        common_opts: Dict[str, Any] = {
+            "outtmpl": output_template,
+            "quiet": True,
+            "no_warnings": True,
+            "concurrent_fragment_downloads": 5,
+            "buffersize": 1024 * 64,
+            "http_chunk_size": 10485760,
+            "retries": 10,
+            "fragment_retries": 10,
+        }
+
         if media_type == "audio":
             ydl_opts: Dict[str, Any] = {
+                **common_opts,
                 "format": "bestaudio/best",
-                "outtmpl": output_template,
-                "quiet": True,
-                "no_warnings": True,
             }
             # Se o ffmpeg estiver instalado, converte para mp3. Caso contrário, mantém o áudio nativo.
             if has_ffmpeg:
@@ -196,10 +248,8 @@ class MediaService:
                 format_selector = "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360][ext=mp4]/best"
 
             ydl_opts = {
+                **common_opts,
                 "format": format_selector,
-                "outtmpl": output_template,
-                "quiet": True,
-                "no_warnings": True,
             }
             if has_ffmpeg:
                 ydl_opts["merge_output_format"] = "mp4"

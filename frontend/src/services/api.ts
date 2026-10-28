@@ -100,21 +100,42 @@ export const pollTaskUntilReady = async (
   taskId: string,
   onStatusUpdate?: (status: DownloadTaskStatus) => void,
   intervalMs: number = 1500,
-  maxAttempts: number = 240
+  maxAttempts: number = 1200 // Suporta downloads longos de até 30 minutos
 ): Promise<DownloadTaskStatus> => {
   let attempts = 0;
+  let consecutiveErrors = 0;
+  const maxConsecutiveErrors = 5;
+
   while (attempts < maxAttempts) {
-    const taskStatus = await getDownloadTaskStatus(taskId);
-    if (onStatusUpdate) {
-      onStatusUpdate(taskStatus);
-    }
+    try {
+      const taskStatus = await getDownloadTaskStatus(taskId);
+      consecutiveErrors = 0; // Reset ao obter resposta com sucesso
 
-    if (taskStatus.status === 'ready') {
-      return taskStatus;
-    }
+      if (onStatusUpdate) {
+        onStatusUpdate(taskStatus);
+      }
 
-    if (taskStatus.status === 'failed') {
-      throw new Error(taskStatus.error || 'Falha ao processar a mídia no servidor.');
+      if (taskStatus.status === 'ready') {
+        return taskStatus;
+      }
+
+      if (taskStatus.status === 'failed') {
+        throw new Error(taskStatus.error || 'Falha ao processar a mídia no servidor.');
+      }
+    } catch (err) {
+      // Se for o erro de falha explícita da task lançado acima, propaga
+      if (err instanceof Error && err.message.startsWith('Falha ao processar a mídia')) {
+        throw err;
+      }
+
+      consecutiveErrors++;
+      if (consecutiveErrors >= maxConsecutiveErrors) {
+        throw new Error(
+          err instanceof Error
+            ? `Erro de conexão com o servidor: ${err.message}`
+            : 'Perda de comunicação contínua com o servidor.'
+        );
+      }
     }
 
     await new Promise((resolve) => setTimeout(resolve, intervalMs));

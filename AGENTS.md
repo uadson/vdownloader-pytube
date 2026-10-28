@@ -60,4 +60,10 @@ Este documento mantém o histórico e sincronismo entre as diretrizes de desenvo
   - Otimização do `fly.toml` com aumento de memória para 2GB (`memory_mb = 2048`) e tolerância de health check (`timeout = '15s'`, `grace_period = '30s'`).
   - Atualização do frontend em `frontend/src/services/api.ts` e `DownloadOptionList.tsx`: abertura imediata da janela nativa do Explorer (`showSaveFilePicker`) no clique do usuário (atendendo à exigência de *User Gesture* dos navegadores), disparo do job em background, polling rápido de status (evitando idle timeout do proxy do Fly.io) e gravação em streaming direto no arquivo escolhido.
   - Suíte de testes expandida para 17 testes `pytest` e 8 testes `vitest` (100% aprovados).
+- **2026-10-28:** Otimização para Vídeos Longos/Lives e Aceleração Concorrente (v0.2.4).
+  - Diagnóstico de timeout em downloads de transmissões longas (ex: link `https://www.youtube.com/watch?v=P1ovxVTUwz8` de 2h04min e ~180MB de áudio / ~1GB de vídeo).
+  - Implementação de download acelerado com fragmentos concorrentes (`concurrent_fragment_downloads = 5`, `buffersize = 64KB`, `http_chunk_size = 10MB`), aumentando a taxa de transferência de 240 KB/s para até 13-25 MB/s (ganho de mais de 50x de velocidade).
+  - Cálculo de progresso e telemetria para fluxos fragmentados HLS/DASH com `fragment_index`/`fragment_count`, formatação de velocidade em tempo real e tempo restante estimado (ETA).
+  - Polling resiliente no frontend com tolerância estendida de até 30 minutos (`maxAttempts = 1200`) e suporte a retentativas em caso de instabilidades transitórias de rede.
+  - Suíte de testes expandida para 21 testes `pytest` e 8 testes `vitest` (100% aprovados).
 
